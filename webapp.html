@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Runes of Power: The Arcane Typing Trial</title>
+  <style>
+    body {
+      background: #1b1b1b;
+      color: #fcebb5;
+      font-family: 'Georgia', serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      color: #ffe066;
+      text-shadow: 0 0 15px #c49b0d;
+    }
+
+    #word {
+      font-size: 2em;
+      margin: 20px;
+      letter-spacing: 2px;
+      color: #ffcc00;
+      text-shadow: 0 0 5px #ffcc00;
+    }
+
+    input {
+      padding: 10px;
+      font-size: 1.2em;
+      background: #2d2d2d;
+      border: 1px solid #d1a100;
+      color: #fcebb5;
+      width: 300px;
+    }
+
+    #status {
+      margin-top: 10px;
+      font-size: 1.1em;
+    }
+
+    #scoreboard {
+      margin-top: 20px;
+      font-size: 1em;
+    }
+
+    .glitch {
+      animation: glitch 0.3s infinite;
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px #ff0000; }
+      50% { text-shadow: -2px -2px #ff9900; }
+      100% { text-shadow: 2px -2px #cc00ff; }
+    }
+
+    button {
+      margin: 8px;
+      padding: 8px 16px;
+      font-size: 1em;
+      background: #d4af37;
+      color: #000;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #b18f2c;
+    }
+
+    #mode-select {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Runes of Power: The Arcane Typing Trial</h1>
+  <div id="mode-select">
+    <button onclick="setMode('easy')">Easy</button>
+    <button onclick="setMode('medium')">Medium</button>
+    <button onclick="setMode('hard')">Hard</button>
+    <button onclick="setMode('sorcerer')">Sorcerer</button>
+  </div>
+  <div id="word">Choose your difficulty...</div>
+  <input type="text" id="input" placeholder="Type the rune..." disabled onkeydown="checkInput(event)">
+  <div id="status"></div>
+  <div id="scoreboard">Score: 0 | Misses: 0</div>
+  <button onclick="restartGame()">Restart</button>
+
+  <script>
+    const wordList = [
+      "eldrith", "mordrin", "thalor", "azrak", "draken",
+      "vorthal", "quendar", "nymira", "zephar", "gallion",
+      "umbrith", "sylphar", "karnax", "faelwyn", "zorgrim",
+      "myrrh", "velkryn", "loramir", "caerwyn", "hexalon"
+    ];
+
+    let currentWord = "";
+    let score = 0;
+    let misses = 0;
+    let timer;
+    let timeLimit = 5000;
+    let winScore = 10;
+
+    const wordDiv = document.getElementById('word');
+    const input = document.getElementById('input');
+    const status = document.getElementById('status');
+    const scoreboard = document.getElementById('scoreboard');
+
+    function setMode(mode) {
+      switch(mode) {
+        case 'easy': winScore = 5; break;
+        case 'medium': winScore = 10; break;
+        case 'hard': winScore = 15; break;
+        case 'sorcerer': winScore = 25; break;
+      }
+      restartGame();
+    }
+
+    function newWord() {
+      currentWord = wordList[Math.floor(Math.random() * wordList.length)];
+      wordDiv.textContent = currentWord;
+      input.value = "";
+      input.focus();
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        failWord("The rune faded too quickly!");
+      }, timeLimit);
+    }
+
+    function checkInput(e) {
+      if (e.key === "Enter") {
+        if (input.value.trim().toLowerCase() === currentWord) {
+          successWord();
+        } else {
+          failWord("The rune shattered!");
+        }
+      }
+    }
+
+    function successWord() {
+      clearTimeout(timer);
+      score++;
+      timeLimit = Math.max(1800, timeLimit - 200);
+      status.textContent = "Rune transcribed successfully!";
+      status.style.color = "#a3ff73";
+      wordDiv.classList.remove("glitch");
+      updateScore();
+      if (score >= winScore) {
+        wordDiv.textContent = "✨ You have mastered the runes! ✨";
+        input.disabled = true;
+        status.textContent = "Victory is yours, Archmage.";
+      } else {
+        setTimeout(newWord, 800);
+      }
+    }
+
+    function failWord(message) {
+      clearTimeout(timer);
+      misses++;
+      status.textContent = message;
+      status.style.color = "#ff6f6f";
+      wordDiv.classList.add("glitch");
+      updateScore();
+      if (misses >= 3) {
+        wordDiv.textContent = "💀 Magic Overload! You failed. 💀";
+        input.disabled = true;
+        status.textContent = "The arcane backlash ends your trial.";
+      } else {
+        setTimeout(newWord, 1000);
+      }
+    }
+
+    function updateScore() {
+      scoreboard.textContent = `Score: ${score} | Misses: ${misses}`;
+    }
+
+    function restartGame() {
+      score = 0;
+      misses = 0;
+      timeLimit = 5000;
+      input.disabled = false;
+      status.textContent = "";
+      updateScore();
+      newWord();
+    }
+  </script>
+</body>
+</html>
